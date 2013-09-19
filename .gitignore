@@ -1,1 +1,4 @@
 cache
+src/main/resources/datasets/dbpedia/h2-dbpedia.trace.db
+src/main/resources/datasets/dbpedia/h2-dbpedia.h2.db
+dbpedia_metrics.sql

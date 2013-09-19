@@ -562,6 +562,42 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		return goodness;
 	}
 	
+	/**
+	 * 
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @return
+	 */
+	public double getGoodness(Individual subject, ObjectProperty predicate, Individual object){
+		
+		double goodness = Double.MIN_VALUE;
+		Set<NamedClass> subjectTypes = reasoner.getTypes(subject);
+		
+		for(NamedClass subjectType : subjectTypes){
+			if(!subjectType.getName().startsWith("http://dbpedia.org/ontology/"))continue;
+			
+			log.info(String.format("Computing goodness of [%s, %s, %s]", subjectType.getName(), predicate.getName(), object.getName()));
+			//this is independent of the object types
+			double pmi_subject_predicate = getDirectedPMI(subjectType, predicate);
+			
+			//get all asserted classes of subject and get the highest value
+			//TODO inference
+			Set<NamedClass> types = reasoner.getTypes(object);
+			for(NamedClass type : types){
+				if(!type.getName().startsWith("http://dbpedia.org/ontology/"))continue;
+				double pmi_preciate_object = getDirectedPMI(predicate, type);
+				double pmi_subject_object = getPMI(subjectType, type);
+				double tmpGoodness = pmi_subject_predicate + pmi_preciate_object + 2*pmi_subject_object;
+				if(tmpGoodness >= goodness){
+					goodness = tmpGoodness;
+				}
+			}
+		}
+		log.info(String.format("Goodness of [%s, %s, %s]=%f", subject.getName(), predicate.getName(), object.getName(), Double.valueOf(goodness)));
+		return goodness;
+	}
+	
 	public double getGoodnessConsideringSimilarity(NamedClass subject, ObjectProperty predicate, NamedClass object, 
 			double subjectSim, double predicateSim, double objectSim){
 		
