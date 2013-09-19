@@ -96,13 +96,13 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		createDatabaseTables();
 		
 		try {
-			subjectClassPredicateSelectPreparedStatement = connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_PREDICATE_OCCURRENCES WHERE SUBJECTCLASS=? && PREDICATE=?");
+			subjectClassPredicateSelectPreparedStatement = connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_PREDICATE_OCCURRENCES WHERE SUBJECTCLASS=? AND PREDICATE=?");
 			subjectClassPredicateInsertPreparedStatement = connection.prepareStatement("INSERT INTO SUBJECTCLASS_PREDICATE_OCCURRENCES (SUBJECTCLASS, PREDICATE, OCCURRENCES) VALUES(?, ?, ?)");
 			
-			predicateObjectClassSelectPreparedStatement = connection.prepareStatement("SELECT OCCURRENCES FROM PREDICATE_OBJECTCLASS_OCCURRENCES WHERE OBJECTCLASS=? && PREDICATE=?");
+			predicateObjectClassSelectPreparedStatement = connection.prepareStatement("SELECT OCCURRENCES FROM PREDICATE_OBJECTCLASS_OCCURRENCES WHERE OBJECTCLASS=? AND PREDICATE=?");
 			predicateObjectClassInsertPreparedStatement = connection.prepareStatement("INSERT INTO PREDICATE_OBJECTCLASS_OCCURRENCES (OBJECTCLASS, PREDICATE, OCCURRENCES) VALUES(?, ?, ?)");
 			
-			subjectClassObjectClassSelectPreparedStatement= connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_OBJECTCLASS_OCCURRENCES WHERE SUBJECTCLASS=? && OBJECTCLASS=?");
+			subjectClassObjectClassSelectPreparedStatement= connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_OBJECTCLASS_OCCURRENCES WHERE SUBJECTCLASS=? AND OBJECTCLASS=?");
 			subjectClassObjectClassInsertPreparedStatement = connection.prepareStatement("INSERT INTO SUBJECTCLASS_OBJECTCLASS_OCCURRENCES (SUBJECTCLASS, OBJECTCLASS, OCCURRENCES) VALUES(?, ?, ?)");
 			
 			subjectClassSelectPreparedStatement= connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_OCCURRENCES WHERE SUBJECTCLASS=?");
@@ -117,7 +117,7 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 			propertyPopularitySelectPreparedStatement= connection.prepareStatement("SELECT POPULARITY FROM PROPERTY_POPULARITY WHERE PROPERTY=?");
 			propertyPopularityInsertPreparedStatement = connection.prepareStatement("INSERT INTO PROPERTY_POPULARITY (PROPERTY, POPULARITY) VALUES(?, ?)");
 		
-			connectingPropertiesSelectPreparedStatement= connection.prepareStatement("SELECT PROPERTY, OCCURRENCES FROM CLASS_CONNECTING_PROPERTIES WHERE SUBJECTCLASS=? && OBJECTCLASS=?");
+			connectingPropertiesSelectPreparedStatement= connection.prepareStatement("SELECT PROPERTY, OCCURRENCES FROM CLASS_CONNECTING_PROPERTIES WHERE SUBJECTCLASS=? AND OBJECTCLASS=?");
 			connectingPropertiesInsertPreparedStatement = connection.prepareStatement("INSERT INTO CLASS_CONNECTING_PROPERTIES (SUBJECTCLASS, OBJECTCLASS, PROPERTY, OCCURRENCES) VALUES(?, ?, ?, ?)");
 		
 		} catch (SQLException e) {
@@ -710,7 +710,7 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		//create database connection
+		//create database connection with MySQL
 		Class.forName("com.mysql.jdbc.Driver");
 		String dbHost = "localhost";
 		String dbPort = "3306";
@@ -720,6 +720,19 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		Connection conn = DriverManager.getConnection("jdbc:mysql://" + dbHost + ":"
 		          + dbPort + "/" + database + "?" + "user=" + dbUser + "&"
 		          + "password=" + dbPassword);
+		
+
+		//create database connection with H2
+		boolean autoServerMode = true;
+		Class.forName("org.h2.Driver");
+        String jdbcString = "";
+        if(autoServerMode) {
+            jdbcString = ";AUTO_SERVER=TRUE";
+        }
+        String dbDir = "src/main/resources/datasets";
+        String dbName = "dbpedia";
+        conn = DriverManager.getConnection("jdbc:h2:" + dbDir + "/" + dbName + jdbcString, "sa", "");
+		
 		
 		
 		Logger.getLogger(DatabaseBackedSPARQLEndpointMetrics.class).setLevel(Level.DEBUG);
