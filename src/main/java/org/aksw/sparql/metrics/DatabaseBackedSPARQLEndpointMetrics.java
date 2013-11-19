@@ -81,7 +81,7 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		if (cacheDirectory != null) {
 			try {
 				long timeToLive = TimeUnit.DAYS.toMillis(30);
-				CacheCoreEx cacheBackend = CacheCoreH2.create(cacheDirectory, timeToLive, true);
+				CacheCoreEx cacheBackend = CacheCoreH2.create(cacheDirectory, timeToLive, false);
 				CacheEx cacheFrontend = new CacheExImpl(cacheBackend);
 				qef = new QueryExecutionFactoryCacheEx(qef, cacheFrontend);
 			} catch (ClassNotFoundException e) {
