@@ -94,7 +94,27 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		this.reasoner = new SPARQLReasoner(new SparqlEndpointKS(endpoint), cacheDirectory);
 		
 		createDatabaseTables();
+		prepareStatements();
 		
+	}
+	
+	public DatabaseBackedSPARQLEndpointMetrics(SparqlEndpoint endpoint, CacheCoreEx cache, Connection connection) {
+		this.endpoint = endpoint;
+		this.connection = connection;
+		
+		qef = new QueryExecutionFactoryHttp(endpoint.getURL().toString(), endpoint.getDefaultGraphURIs());
+		if (cache != null) {
+			CacheEx cacheFrontend = new CacheExImpl(cache);
+			qef = new QueryExecutionFactoryCacheEx(qef, cacheFrontend);
+		}
+//			qef = new QueryExecutionFactoryPaginated(qef, 10000);
+		this.reasoner = new SPARQLReasoner(new SparqlEndpointKS(endpoint), cache);
+		
+		createDatabaseTables();
+		prepareStatements();
+	}
+	
+	private void prepareStatements(){
 		try {
 			subjectClassPredicateSelectPreparedStatement = connection.prepareStatement("SELECT OCCURRENCES FROM SUBJECTCLASS_PREDICATE_OCCURRENCES WHERE SUBJECTCLASS=? AND PREDICATE=?");
 			subjectClassPredicateInsertPreparedStatement = connection.prepareStatement("INSERT INTO SUBJECTCLASS_PREDICATE_OCCURRENCES (SUBJECTCLASS, PREDICATE, OCCURRENCES) VALUES(?, ?, ?)");
@@ -123,7 +143,6 @@ public class DatabaseBackedSPARQLEndpointMetrics {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	private void createDatabaseTables(){
